@@ -1,0 +1,37 @@
+name: Build APK
+
+on:
+  push:
+    branches:
+      - main  # O anumang branch na gusto mong gamitin
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8  # I-adjust ayon sa iyong python version
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-pip python3-setuptools python3-dev
+        sudo apt install -y build-essential libssl-dev libffi-dev python3-dev
+        pip install -r requirements.txt
+        pip install buildozer
+
+    - name: Build APK
+      run: |
+        buildozer -v android debug  # O gamitin ang release kung gusto mong gumawa ng signed APK
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v2
+      with:
+        name: apk
+        path: bin/*.apk

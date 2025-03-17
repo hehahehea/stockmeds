@@ -24,7 +24,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt update
-        sudo apt install -y python3-pip openjdk-17-jdk unzip
+        sudo apt install -y python3-pip openjdk-17-jdk unzip git
         pip install --upgrade pip
         pip install buildozer cython virtualenv kivy
 
@@ -34,15 +34,19 @@ jobs:
 
     - name: Configure Buildozer Spec
       run: |
-        sed -i 's/^# requirements = python3,kivy$/requirements = python3,kivy,pytz,sqlite3/g' buildozer.spec
+        sed -i 's/^# requirements = python3,kivy$/requirements = python3,kivy,pytz/g' buildozer.spec
         sed -i 's/^# android.arch = arm64-v8a$/android.arch = arm64-v8a/g' buildozer.spec
 
     - name: Build APK
       run: |
-        buildozer -v android debug
+        buildozer -v android debug || (cat buildozer.spec && exit 1)
+
+    - name: Debug Buildozer Output
+      run: ls -R bin/ || echo "No APK found!"
 
     - name: Upload APK Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Kivy-Pharmacy-App
         path: bin/*.apk
+        

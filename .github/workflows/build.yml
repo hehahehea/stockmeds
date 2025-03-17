@@ -1,45 +1,30 @@
-name: Build APK for Pharmacy App
+name: Build Kivy App
 
 on:
   push:
     branches:
-      - main  # I-push ang changes sa main branch para magsimula ang build process
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Gumamit ng Ubuntu environment sa GitHub Actions
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2  # Mag-clone ng repository
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v2  # I-setup ang Python version
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.8  # Siguraduhing compatible sa iyong environment
+        python-version: '3.10'
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
-        sudo apt update
-        sudo apt install -y python3-pip python3-setuptools python3-dev \
-        build-essential libssl-dev libffi-dev python3-dev \
-        libsqlite3-dev liblzma-dev
-        pip install --upgrade pip
-        pip install -r requirements.txt  # Kung may requirements.txt ka para sa mga libraries
+        python -m pip install --upgrade pip
+        pip install kivy kivy-examples sqlite3 pytz
 
-    - name: Install Buildozer
-      run: pip install buildozer  # I-install ang Buildozer tool
-
-    - name: Set up Buildozer
-      run: |
-        buildozer init  # Kung wala pang buildozer.spec file, gagawin ito ng Buildozer
-
-    - name: Build APK
-      run: |
-        buildozer android debug  # Pwede rin gamitin ang `release` kung gusto mong mag-generate ng signed APK
-
-    - name: Upload APK as artifact
-      uses: actions/upload-artifact@v2  # Para i-upload ang APK as an artifact
-      with:
-        name: pharmacy-apk  # Pangalan ng APK artifact
-        path: bin/*.apk  # I-upload ang APK mula sa bin folder
+    - name: Run Application Test
+      run: python main.py

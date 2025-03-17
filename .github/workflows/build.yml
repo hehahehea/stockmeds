@@ -42,7 +42,8 @@ jobs:
       run: buildozer init
 
     - name: Build APK
-      run: buildozer -v android debug || (cat buildozer.spec && exit 1)
+      run: |
+        buildozer -v android debug || (cat buildozer.spec && cat .buildozer/android/platform/build.log && exit 1)
 
     - name: Debug Buildozer Output
       run: ls -R bin/ || echo "No APK found!"

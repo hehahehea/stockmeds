@@ -1,4 +1,4 @@
-name: Build Kivy APK
+name: Build Kivy App
 
 on:
   push:
@@ -7,54 +7,42 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
 
-    - name: Install Dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y python3-pip openjdk-17-jdk unzip git
-        pip install --upgrade pip
-        pip install buildozer cython virtualenv kivy
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3 python3-pip openjdk-17-jdk
+          pip install --upgrade pip
+          pip install buildozer cython virtualenv
 
-    - name: Check if buildozer.spec Exists
-      id: check_spec
-      run: |
-        if [ -f buildozer.spec ]; then
-          echo "spec_exists=true" >> $GITHUB_ENV
-        else
-          echo "spec_exists=false" >> $GITHUB_ENV
-        fi
+      - name: Set up Buildozer
+        run: |
+          buildozer init
+          cp buildozer.spec buildozer.spec.bak
+          mv buildozer.spec.bak buildozer.spec
 
-    - name: Initialize Buildozer (If Needed)
-      if: env.spec_exists == 'false'
-      run: buildozer init
+      - name: Accept Android SDK Licenses
+        run: yes | sdkmanager --licenses
 
-    - name: Build APK
-      run: |
-        buildozer -v android debug || (echo "BUILD FAILED! Showing logs..." && cat .buildozer/android/platform/build.log && exit 1)
+      - name: Build APK
+        run: buildozer -v android debug
 
-    - name: Show Buildozer Log if Error Occurs
-      if: failure()
-      run: cat .buildozer/android/platform/build.log || echo "No build log found"
-
-    - name: Debug Buildozer Output
-      run: ls -R bin/ || echo "No APK found!"
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Kivy-Pharmacy-App
-        path: bin/*.apk
-        
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: PharmacyApp-APK
+          path: bin/*.apk
+          

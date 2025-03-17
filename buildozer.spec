@@ -18,8 +18,8 @@ target = android
 requirements = python3, kivy, sqlite3, pytz, os
 
 # Icon at presplash (siguraduhin na may files na ito sa directory mo)
-icon.filename = icon.png
-presplash.filename = presplash.png
+icon.filename = logo.jpg
+presplash.filename = loading.jpg
 
 # Orientation ng screen
 orientation = portrait

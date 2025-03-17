@@ -28,18 +28,26 @@ jobs:
         pip install --upgrade pip
         pip install buildozer cython virtualenv kivy
 
-    - name: Initialize Buildozer
+    - name: Check if buildozer.spec Exists
+      id: check_spec
       run: |
-        buildozer init
+        if [ -f buildozer.spec ]; then
+          echo "spec_exists=true" >> $GITHUB_ENV
+        else
+          echo "spec_exists=false" >> $GITHUB_ENV
+        fi
 
-    - name: Configure Buildozer Spec
-      run: |
-        sed -i 's/^# requirements = python3,kivy$/requirements = python3,kivy,pytz/g' buildozer.spec
-        sed -i 's/^# android.arch = arm64-v8a$/android.arch = arm64-v8a/g' buildozer.spec
+    - name: Initialize Buildozer (If Needed)
+      if: env.spec_exists == 'false'
+      run: buildozer init
 
     - name: Build APK
       run: |
-        buildozer -v android debug || (cat buildozer.spec && exit 1)
+        buildozer -v android debug || (echo "BUILD FAILED! Showing logs..." && cat .buildozer/android/platform/build.log && exit 1)
+
+    - name: Show Buildozer Log if Error Occurs
+      if: failure()
+      run: cat .buildozer/android/platform/build.log || echo "No build log found"
 
     - name: Debug Buildozer Output
       run: ls -R bin/ || echo "No APK found!"
